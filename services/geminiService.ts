@@ -11,12 +11,18 @@ const getApiKey = () => {
   }
 };
 
-const ai = new GoogleGenAI({ apiKey: getApiKey() });
+const apiKey = getApiKey();
+const ai = new GoogleGenAI({ apiKey: apiKey });
 
 export const getGardenAdvice = async (
   userQuery: string,
   availableProducts: Product[]
 ): Promise<string> => {
+  if (!apiKey) {
+    console.error("Gemini API Key faltante. Verifica tu archivo .env o la configuración de Render (VITE_API_KEY).");
+    return "Lo siento, mi cerebro digital no está configurado correctamente (Falta API Key). Contacta al administrador.";
+  }
+
   const productContext = availableProducts
     .map((p) => `- ${p.name} (${p.category}): $${p.price}. ${p.description}`)
     .join("\n");
@@ -49,8 +55,14 @@ export const getGardenAdvice = async (
     });
 
     return response.text || "Lo siento, no pude generar una respuesta en este momento.";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error calling Gemini:", error);
+    
+    // Manejo específico de errores comunes
+    if (error.message?.includes('403') || error.status === 403 || error.message?.includes('leaked')) {
+        return "Error de configuración: La clave de API ha sido rechazada o bloqueada por Google. Por favor genera una nueva.";
+    }
+    
     return "Tuve un problema conectando con mi base de conocimientos botánica. Por favor intenta de nuevo.";
   }
 };
