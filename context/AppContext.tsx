@@ -208,7 +208,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (firebaseUser) {
             try {
                 // Buscamos el documento del usuario en la colección 'users' usando el UID
-                // NO usamos displayName ni email split. Solo lo que está en la base de datos.
                 const userDocRef = doc(db, 'users', firebaseUser.uid);
                 const userDocSnap = await getDoc(userDocRef);
 
@@ -216,7 +215,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                     const userData = userDocSnap.data() as User;
                     
                     // REGLA DE ORO: Forzar Admin para ssamaniego065@gmail.com
-                    // Esto asegura acceso al panel incluso si la DB dice 'user'
                     if (userData.email === 'ssamaniego065@gmail.com') {
                         userData.role = 'admin';
                     }
@@ -224,13 +222,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                     // Establecemos el usuario SOLO si existe en la DB
                     setCurrentUser({
                         ...userData,
-                        id: firebaseUser.uid // Aseguramos que el ID coincida
+                        id: firebaseUser.uid 
                     });
                 } else {
                     console.error("Usuario autenticado en Firebase pero no encontrado en Firestore (colección users).");
-                    // Opcional: Cerrar sesión si hay inconsistencia de datos
-                    // await signOut(auth);
-                    // setCurrentUser(null);
                 }
             } catch (error) {
                 console.error("Error leyendo datos del usuario:", error);
@@ -275,14 +270,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           const userCred = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
           
           // 2. Crear documento en Firestore 'users' CON LOS DATOS DEL FORMULARIO
-          // Aquí es donde guardamos tu Nombre y Apellido reales.
           const newUser: User = {
               id: userCred.user.uid,
               email: userData.email,
-              name: userData.name,       // Nombre del input
-              surname: userData.surname, // Apellido del input
-              password: '***',           // No guardamos la pass real
-              role: 'user'               // Por defecto user
+              name: userData.name,       
+              surname: userData.surname, 
+              password: '***',           
+              role: 'user'               
           };
           
           // Forzar admin si es el email maestro durante el registro también
@@ -303,7 +297,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
       await signOut(auth);
-      setCurrentUser(null); // Limpieza inmediata del estado local
+      setCurrentUser(null); 
       navigateTo('/');
   };
 
@@ -335,6 +329,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addCategory = (c: string) => {
       const newList = [...productCategories, c];
       setProductCategories(newList);
+      // Usar setDoc para config/categories
       safeWrite(async () => await setDoc(doc(db, 'config', 'categories'), { list: newList }));
   };
   const deleteCategory = (c: string) => {
@@ -400,16 +395,32 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const updateAppointment = (a: Appointment) => safeWrite(async () => await setDoc(doc(db, 'appointments', a.id), a));
   const deleteAppointment = (id: string) => safeWrite(async () => await deleteDoc(doc(db, 'appointments', id)));
 
-  const updatePaymentConfig = (c: PaymentConfig) => safeWrite(async () => { setPaymentConfig(c); await updateDoc(doc(db, 'config', 'general'), { paymentConfig: c }); });
-  const updateHeroImages = (i: string[]) => safeWrite(async () => { setHeroImages(i); await updateDoc(doc(db, 'config', 'general'), { heroImages: i }); });
-  const toggleShop = (e: boolean) => safeWrite(async () => { setIsShopEnabled(e); await updateDoc(doc(db, 'config', 'general'), { isShopEnabled: e }); });
+  // USO DE setDoc con { merge: true }
+  // Esto soluciona el error "No document to update" si el archivo config/general no existe
+  const updatePaymentConfig = (c: PaymentConfig) => safeWrite(async () => { 
+      setPaymentConfig(c); 
+      await setDoc(doc(db, 'config', 'general'), { paymentConfig: c }, { merge: true }); 
+  });
+  
+  const updateHeroImages = (i: string[]) => safeWrite(async () => { 
+      console.log("Updating hero images URLs in config/general", i);
+      setHeroImages(i); 
+      // Las imágenes reales están en Cloudinary. Aquí solo guardamos la lista de URLs.
+      // Usamos setDoc con merge para que si no existe config/general, lo cree.
+      await setDoc(doc(db, 'config', 'general'), { heroImages: i }, { merge: true }); 
+  });
+
+  const toggleShop = (enabled: boolean) => safeWrite(async () => {
+      setIsShopEnabled(enabled);
+      await setDoc(doc(db, 'config', 'general'), { isShopEnabled: enabled }, { merge: true });
+  });
 
   return (
     <AppContext.Provider value={{
       products, productCategories, addProduct, updateProduct, deleteProduct, addCategory, deleteCategory,
-      projects, addProject, updateProject, deleteProject,
       cart, addToCart, removeFromCart, clearCart, isCartOpen, toggleCart, recordSale,
       serviceRequests, addServiceRequest, updateServiceRequestStatus,
+      projects, addProject, updateProject, deleteProject,
       currentUser, login, register, logout, users, grantAdminRole,
       clients, addClient, updateClient, deleteClient, addClientLog, updateClientLogStatus,
       appointments, addAppointment, updateAppointment, deleteAppointment,
@@ -425,6 +436,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
 export const useApp = () => {
   const context = useContext(AppContext);
-  if (!context) throw new Error('useApp must be used within AppProvider');
+  if (context === undefined) {
+    throw new Error('useApp must be used within an AppProvider');
+  }
   return context;
 };

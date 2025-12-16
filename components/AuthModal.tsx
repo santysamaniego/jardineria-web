@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { X, Eye, EyeOff, User, Mail, Lock, Check } from 'lucide-react';
 
@@ -21,6 +21,31 @@ const AuthModal = () => {
   const [showRegPass, setShowRegPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [regError, setRegError] = useState('');
+
+  // Efecto para limpiar el formulario cuando se cierra el modal
+  useEffect(() => {
+    if (!isAuthModalOpen) {
+      // Pequeño timeout para que no se vea el "flicker" de limpieza mientras se cierra la animación
+      const timer = setTimeout(() => {
+          setLoginEmail('');
+          setLoginPass('');
+          setLoginError('');
+          
+          setRegName('');
+          setRegSurname('');
+          setRegEmail('');
+          setRegPass('');
+          setRegConfirmPass('');
+          setRegError('');
+          
+          setShowLoginPass(false);
+          setShowRegPass(false);
+          setShowConfirmPass(false);
+          setActiveTab('login');
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthModalOpen]);
 
   if (!isAuthModalOpen) return null;
 
