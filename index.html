@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Los Hermanos | Jardinería</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['"Playfair Display"', 'serif'],
+              sans: ['"Lato"', 'sans-serif'],
+            },
+            colors: {
+              jungle: {
+                50: '#F7FDF9',
+                100: '#ECFDF3',
+                200: '#D1FAE5',
+                300: '#A7F3D0',
+                400: '#88C483',
+                500: '#69A96E',
+                600: '#4F8A55',
+                700: '#3F6E46',
+                800: '#2F5233',
+                900: '#1F3A26',
+                950: '#0F2013',
+              }
+            },
+            animation: {
+              'float': 'float 6s ease-in-out infinite',
+              'sway': 'sway 4s ease-in-out infinite',
+              'sway-slow': 'sway 7s ease-in-out infinite',
+              'grow': 'grow 1s ease-out forwards',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              },
+              sway: {
+                '0%, 100%': { transform: 'rotate(-3deg)' },
+                '50%': { transform: 'rotate(3deg)' },
+              },
+              grow: {
+                '0%': { transform: 'scale(0.8)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Organic feel classes */
+      .organic-border {
+        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+      }
+      .organic-card {
+        border-radius: 2rem 1rem 3rem 1rem;
+      }
+
+      /* Subtle leaf pattern background */
+      body {
+        background-color: #FCFDFB;
+        background-image: radial-gradient(#69A96E 0.5px, transparent 0.5px), radial-gradient(#69A96E 0.5px, #FCFDFB 0.5px);
+        background-size: 20px 20px;
+        background-position: 0 0, 10px 10px;
+        background-blend-mode: multiply;
+        background-attachment: fixed;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.92);
+        z-index: -1;
+      }
+
+      /* Custom scrollbar - Desktop Only */
+      @media (min-width: 768px) {
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #88C483; 
+          border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #69A96E; 
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "lucide-react": "https://esm.sh/lucide-react@0.292.0",
+    "uuid": "https://esm.sh/uuid@9.0.1",
+    "@google/genai": "https://esm.sh/@google/genai@0.1.1",
+    "firebase/app": "https://esm.sh/firebase@10.8.1/app",
+    "firebase/firestore": "https://esm.sh/firebase@10.8.1/firestore",
+    "firebase/auth": "https://esm.sh/firebase@10.8.1/auth",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "firebase/": "https://esm.sh/firebase@^12.6.0/"
+  }
+}
+</script>
+</head>
+  <body class="text-stone-800 font-sans antialiased selection:bg-jungle-200 overflow-x-hidden">
+    <div id="root"></div>
+    <script>
+      // Polyfill simple para evitar crash si alguna librería accede a process
+      if (typeof process === 'undefined') {
+        window.process = { env: {} };
+      }
+    </script>
+    <!-- ESTA LÍNEA ES CRÍTICA: Carga la aplicación React -->
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>
